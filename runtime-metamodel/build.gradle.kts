@@ -33,8 +33,8 @@ tasks.test {
 
 publishing {
     publications {
-        create<MavenPublication>("autodoc-model") {
-            artifactId = "autodoc-model"
+        create<MavenPublication>("runtime-metamodel") {
+            artifactId = "runtime-metamodel"
             from(components["java"])
         }
     }

@@ -1,12 +1,13 @@
 plugins {
     // Apply the Java Gradle plugin development plugin to add support for developing Gradle plugins
-    id("com.gradle.plugin-publish") version "1.0.0" apply false
     checkstyle
+    `maven-publish`
+    signing
+    `java-library`
     // for publishing to nexus/ossrh/mavencentral
     id("org.gradle.crypto.checksum") version "1.4.0"
     id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
-    `maven-publish`
-    signing
+    id("com.gradle.plugin-publish") version "1.0.0" apply false
 }
 
 val groupId: String by project;
@@ -53,6 +54,18 @@ subprojects {
                 }
             }
         }
+
+        java {
+            val javaVersion = 11
+            toolchain {
+                languageVersion.set(JavaLanguageVersion.of(javaVersion))
+            }
+            tasks.withType(JavaCompile::class.java) {
+                // making sure the code does not use any APIs from a more recent version.
+                // Ref: https://docs.gradle.org/current/userguide/building_java_projects.html#sec:java_cross_compilation
+                options.release.set(javaVersion.toInt())
+            }
+        }
     }
 
     // configure checkstyle version
@@ -65,6 +78,7 @@ subprojects {
         mavenCentral()
     }
 
+
     // let's not generate any reports because that is done from within the Github Actions workflow
     tasks.withType<Checkstyle> {
         reports {
@@ -75,7 +89,6 @@ subprojects {
 
 
 }
-
 
 repositories {
     // Use Maven Central for resolving dependencies
