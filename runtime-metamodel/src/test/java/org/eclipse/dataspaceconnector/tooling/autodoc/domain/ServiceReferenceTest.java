@@ -16,6 +16,7 @@ package org.eclipse.dataspaceconnector.tooling.autodoc.domain;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eclipse.dataspaceconnector.runtime.metamodel.domain.ServiceReference;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

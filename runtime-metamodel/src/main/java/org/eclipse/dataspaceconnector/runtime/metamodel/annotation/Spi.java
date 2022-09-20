@@ -1,18 +1,18 @@
 /*
- *  Copyright (c) 2022 Microsoft Corporation
+ * Copyright (c) 2022 Microsoft Corporation
  *
- *  This program and the accompanying materials are made available under the
- *  terms of the Apache License, Version 2.0 which is available at
- *  https://www.apache.org/licenses/LICENSE-2.0
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
- *  SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: Apache-2.0
  *
- *  Contributors:
- *       Microsoft Corporation - initial API and implementation
+ * Contributors:
+ *      Microsoft Corporation - initial API and implementation
  *
  */
 
-package org.eclipse.dataspaceconnector.spi.system;
+package org.eclipse.dataspaceconnector.runtime.metamodel.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -22,7 +22,7 @@ import java.lang.annotation.Target;
 /**
  * Denotes an SPI module.
  */
-@Target({ElementType.PACKAGE})
+@Target({ ElementType.PACKAGE })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Spi {
 
