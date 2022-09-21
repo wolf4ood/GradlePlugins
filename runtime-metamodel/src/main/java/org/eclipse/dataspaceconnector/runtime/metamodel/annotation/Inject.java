@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2022 Microsoft Corporation
+ *  Copyright (c) 2022 Microsoft Corporation
  *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0
+ *  This program and the accompanying materials are made available under the
+ *  terms of the Apache License, Version 2.0 which is available at
+ *  https://www.apache.org/licenses/LICENSE-2.0
  *
- * SPDX-License-Identifier: Apache-2.0
+ *  SPDX-License-Identifier: Apache-2.0
  *
- * Contributors:
- *      Microsoft Corporation - initial API and implementation
+ *  Contributors:
+ *       Microsoft Corporation - initial API and implementation
  *
  */
 
@@ -20,9 +20,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to be used on a {@link ServiceExtension}'s fields, so that they can be automatically set during
+ * Annotation to be used on a {@code ServiceExtension}'s fields, so that they can be automatically set during
  * the extension load phase.
- * This annotation has no effect on any class other than a {@link ServiceExtension}.
+ * This annotation has no effect on any class other than a {@code ServiceExtension}.
  * <p>
  * do NOT @Inherited it, because that complicates things
  */
