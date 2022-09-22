@@ -40,10 +40,9 @@ subprojects {
             apply(plugin = "signing")
 
             //set the deploy-url only for java libraries
-            val deployUrl = if (actualVersion.contains("SNAPSHOT"))
-                "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-            else
-                "https://oss.sonatype.org/content/repositories/snapshots/"
+            val deployUrl =
+                if (actualVersion.contains("SNAPSHOT")) "https://oss.sonatype.org/content/repositories/snapshots/"
+                else "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
             publishing {
                 repositories {
                     maven {
