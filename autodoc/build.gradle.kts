@@ -53,7 +53,7 @@ tasks.test {
 pluginBundle {
     website = "https://projects.eclipse.org/proposals/eclipse-dataspace-connector"
     vcsUrl = "http://github.com/eclipse-dataspaceconnector/"
-    group = group
+    group = groupId
     version = version
     tags = listOf("build", "documentation", "generated", "autodoc")
 }
