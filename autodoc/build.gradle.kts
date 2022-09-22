@@ -6,7 +6,7 @@ val jupiterVersion: String by project
 val assertj: String by project
 
 dependencies {
-    implementation(project(":autodoc-model"))
+    implementation(project(":runtime-metamodel"))
     // Use JUnit test framework for unit tests
     testImplementation("org.junit.jupiter:junit-jupiter-api:${jupiterVersion}")
     testImplementation("org.junit.jupiter:junit-jupiter-params:${jupiterVersion}")
