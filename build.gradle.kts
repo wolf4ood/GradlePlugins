@@ -16,13 +16,20 @@ val jupiterVersion: String by project
 val assertj: String by project
 val mockitoVersion: String by project
 
+// values needed for publishing
+val pluginsWebsiteUrl: String by project
+val pluginsDeveloperId: String by project
+val pluginsDeveloperName: String by project
+val pluginsDeveloperEmail: String by project
+val pluginsScmConnection: String by project
+val pluginsScmUrl: String by project
 
 var actualVersion: String = (project.findProperty("version") ?: defaultVersion) as String
 if (actualVersion == "unspecified") {
     actualVersion = defaultVersion
 }
 
-subprojects {
+allprojects {
     apply(plugin = "checkstyle")
     version = actualVersion
     group = groupId
@@ -96,6 +103,37 @@ subprojects {
         }
     }
 
+    afterEvaluate {
+        publishing {
+            publications.forEach { i ->
+                val mp = (i as MavenPublication)
+                mp.pom {
+                    name.set(project.name)
+                    description.set("edc :: ${project.name}")
+                    url.set(pluginsWebsiteUrl)
+
+                    licenses {
+                        license {
+                            name.set("The Apache License, Version 2.0")
+                            url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                        }
+                        developers {
+                            developer {
+                                id.set(pluginsDeveloperId)
+                                name.set(pluginsDeveloperName)
+                                email.set(pluginsDeveloperEmail)
+                            }
+                        }
+                        scm {
+                            connection.set(pluginsScmConnection)
+                            url.set(pluginsScmUrl)
+                        }
+                    }
+                }
+//                println("\n${mp.groupId}:${mp.artifactId}:${mp.version}")
+            }
+        }
+    }
 
 }
 
