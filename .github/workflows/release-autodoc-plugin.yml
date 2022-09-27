@@ -1,0 +1,45 @@
+name: Create Autodoc Plugin Release
+on:
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: 'Version string that is used for publishing (e.g. "1.0.0", NOT "v1.0.0"). Appending -SNAPSHOT will create a snapshot release.'
+        required: true
+        type: string
+
+
+env:
+  RELEASE_VERSION: ${{ github.event.inputs.release_version || inputs.release_version }}
+
+jobs:
+  Prepare-Release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Publish Autodoc Plugin
+        run: |
+          ./gradlew publishPlugins -Pgradle.publish.key=${{ secrets.GRADLE_PUBLISH_KEY }} -Pgradle.publish.secret=${{ secrets.GRADLE_PUBLISH_SECRET }} -Pskip.signing -Pversion=${{ env.RELEASE_VERSION }}
+
+    outputs:
+      metamodel-version: ${{ env.RELEASE_VERSION }}
+
+  Github-Release:
+    # cannot use the workflow-level env yet as it does not yet exist, must take output from previous job
+    if: ${{ !endsWith( needs.Prepare-Release.outputs.metamodel-version, '-SNAPSHOT') }}
+    needs:
+      - Prepare-Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: main
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          generateReleaseNotes: true
+          tag: "v${{ env.RELEASE_VERSION }}"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          removeArtifacts: true
