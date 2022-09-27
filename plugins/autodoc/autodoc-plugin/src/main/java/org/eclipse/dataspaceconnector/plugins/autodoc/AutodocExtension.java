@@ -14,20 +14,13 @@
 
 package org.eclipse.dataspaceconnector.plugins.autodoc;
 
-import org.gradle.api.DefaultTask;
-import org.gradle.api.tasks.TaskAction;
+import org.gradle.api.provider.Property;
 
-/**
- * Enhanced task to download an artifact from a remote repository
- */
-public abstract class GenerateDocumentationTask extends DefaultTask {
-
+public abstract class AutodocExtension {
     /**
-     * Generates documentation
+     * Override the version of the annotation processor module to use. The default is to take the same version as the plugin.
      */
-    @TaskAction
-    public void generateDocumentation() {
-        System.out.println("Generating documentation...");
-    }
+    public abstract Property<String> getProcessorVersion();
+
 
 }

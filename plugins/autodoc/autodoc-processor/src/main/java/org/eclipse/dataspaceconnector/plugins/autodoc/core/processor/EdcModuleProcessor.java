@@ -48,11 +48,11 @@ import static javax.tools.Diagnostic.Kind.NOTE;
  * <p>
  * Two processor parameters must be set: {@link #ID} which by convention uses Maven group id an artifact id coordinates;
  * and {@link #VERSION}. To Override the location where the manifest is generated, specify
- * {@link #EDC_LOCATION_OVERRIDE} as a processor parameter.
+ * {@link #EDC_OUTPUTDIR_OVERRIDE} as a processor parameter.
  */
 @SupportedAnnotationTypes({
-        "org.eclipse.dataspaceconnector.runtime.metamodel.annotationEdcSetting",
-        "org.eclipse.dataspaceconnector.runtime.metamodel.annotationEdcSettingContext",
+        "org.eclipse.dataspaceconnector.runtime.metamodel.annotation.EdcSetting",
+        "org.eclipse.dataspaceconnector.runtime.metamodel.annotation.EdcSettingContext",
         "org.eclipse.dataspaceconnector.runtime.metamodel.annotation.Extension",
         "org.eclipse.dataspaceconnector.runtime.metamodel.annotation.Spi",
         "org.eclipse.dataspaceconnector.runtime.metamodel.annotation.ExtensionPoint",
@@ -64,12 +64,10 @@ import static javax.tools.Diagnostic.Kind.NOTE;
 @SupportedSourceVersion(SourceVersion.RELEASE_11)
 @SupportedOptions({ EdcModuleProcessor.ID, EdcModuleProcessor.VERSION })
 public class EdcModuleProcessor extends AbstractProcessor {
-    static final String VERSION = "edc.version";
-    static final String ID = "edc.id";
-
+    public static final String VERSION = "edc.version";
+    public static final String ID = "edc.id";
+    public static final String EDC_OUTPUTDIR_OVERRIDE = "edc.outputdir";
     private static final String MANIFEST_NAME = "edc.json";
-    private static final String EDC_LOCATION_OVERRIDE = "edc.location";
-
     private final ObjectMapper mapper = new ObjectMapper();
 
     private ModuleIntrospector moduleIntrospector;
@@ -158,7 +156,7 @@ public class EdcModuleProcessor extends AbstractProcessor {
                 processingEnv.getMessager().printMessage(ERROR, "Multiple SPI definitions found in module: " + types);
                 return null;
             } else if (spiElements.isEmpty()) {
-                processingEnv.getMessager().printMessage(NOTE, "Note an EDC module. Skipping module processing.");
+                processingEnv.getMessager().printMessage(NOTE, "Not an EDC module. Skipping module processing.");
                 return null;
             }
             return ModuleType.SPI;
@@ -177,7 +175,7 @@ public class EdcModuleProcessor extends AbstractProcessor {
     private void writeManifest() {
         try {
             var filer = processingEnv.getFiler();
-            var location = processingEnv.getOptions().get(EDC_LOCATION_OVERRIDE);
+            var location = processingEnv.getOptions().get(EDC_OUTPUTDIR_OVERRIDE);
             if (location != null) {
                 new File(location).mkdirs();
                 try (var writer = new BufferedWriter(new FileWriter(location + File.separator + MANIFEST_NAME))) {
