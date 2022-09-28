@@ -14,6 +14,7 @@
 
 package org.eclipse.dataspaceconnector.runtime.metamodel.annotation;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -27,6 +28,7 @@ import java.lang.annotation.Target;
  */
 @Target({ ElementType.TYPE, ElementType.PACKAGE, ElementType.MODULE })
 @Retention(RetentionPolicy.RUNTIME)
+@Documented
 public @interface Provides {
     Class<?>[] value();
 }
