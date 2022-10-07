@@ -15,11 +15,12 @@
 package org.eclipse.dataspaceconnector.plugins.autodoc.core.processor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eclipse.dataspaceconnector.plugins.autodoc.core.processor.introspection.ExtensionIntrospector;
 import org.eclipse.dataspaceconnector.plugins.autodoc.core.processor.introspection.ModuleIntrospector;
 import org.eclipse.dataspaceconnector.plugins.autodoc.core.processor.introspection.OverviewIntrospector;
-import org.eclipse.dataspaceconnector.runtime.metamodel.annotation.Extension;
 import org.eclipse.dataspaceconnector.runtime.metamodel.annotation.Spi;
 import org.eclipse.dataspaceconnector.runtime.metamodel.domain.EdcModule;
+import org.eclipse.dataspaceconnector.runtime.metamodel.domain.EdcServiceExtension;
 import org.eclipse.dataspaceconnector.runtime.metamodel.domain.ModuleType;
 import org.jetbrains.annotations.Nullable;
 
@@ -75,15 +76,19 @@ public class EdcModuleProcessor extends AbstractProcessor {
     private OverviewIntrospector overviewIntrospector;
 
     private EdcModule.Builder moduleBuilder;
+    private EdcServiceExtension.Builder extensionBuilder;
+    private ExtensionIntrospector extensionIntrospector;
 
     private ModuleType moduleType;
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
-        moduleIntrospector = new ModuleIntrospector(processingEnv.getElementUtils());
+        moduleIntrospector = new ModuleIntrospector(processingEnv.getElementUtils(), processingEnv.getTypeUtils());
         //todo: replace this Noop converter with an actual JavadocConverter
         overviewIntrospector = new OverviewIntrospector(javadoc -> javadoc, processingEnv.getElementUtils());
+
+        extensionIntrospector = new ExtensionIntrospector(processingEnv.getElementUtils());
     }
 
     @Override
@@ -99,15 +104,26 @@ public class EdcModuleProcessor extends AbstractProcessor {
             return false; // processing rounds are complete, return
         }
 
-        moduleBuilder.provides(moduleIntrospector.resolveProvidedServices(environment));
+        if (moduleType == ModuleType.EXTENSION) {
+            var extensionElements = moduleIntrospector.getExtensionElements(environment);
+
+            extensionElements.forEach(element -> {
+                extensionBuilder = EdcServiceExtension.Builder.newInstance().type(moduleType)
+                        .name(extensionIntrospector.getExtensionName(element))
+                        .className(extensionIntrospector.getExtensionClassname(element))
+                        .provides(extensionIntrospector.resolveProvidedServices(element))
+                        .references(extensionIntrospector.resolveReferencedServices(element))
+                        .configuration(extensionIntrospector.resolveConfigurationSettings(element))
+                        .overview(overviewIntrospector.generateModuleOverview(moduleType, environment))
+                        .categories(extensionIntrospector.getExtensionCategories(element));
+                moduleBuilder.extension(extensionBuilder.build());
+            });
+        } else {
+            moduleBuilder.name(moduleIntrospector.getModuleName(environment));
+            moduleBuilder.categories(moduleIntrospector.getCategories(environment));
+        }
 
         moduleBuilder.extensionPoints(moduleIntrospector.resolveExtensionPoints(environment));
-
-        moduleBuilder.references(moduleIntrospector.resolveReferencedServices(environment));
-
-        moduleBuilder.configuration(moduleIntrospector.resolveConfigurationSettings(environment));
-
-        moduleBuilder.overview(overviewIntrospector.generateModuleOverview(moduleType, environment));
 
         return false;
     }
@@ -131,45 +147,34 @@ public class EdcModuleProcessor extends AbstractProcessor {
         }
 
         moduleType = determineAndValidateModuleType(environment);
-        if (moduleType == null) {
+        if (moduleType == ModuleType.INVALID) {
             // error or not a module, return
             return false;
         }
 
-        var name = moduleIntrospector.getModuleName(moduleType, environment);
-
-        var categories = moduleIntrospector.getModuleCategories(moduleType, environment);
-
-        moduleBuilder = EdcModule.Builder.newInstance().id(id).version(version).type(moduleType).name(name).categories(categories);
+        moduleBuilder = EdcModule.Builder.newInstance().modulePath(id).version(version);
 
         return true;
     }
 
     @Nullable
     private ModuleType determineAndValidateModuleType(RoundEnvironment environment) {
-        var extensionElements = environment.getElementsAnnotatedWith(Extension.class);
+        var extensionElements = moduleIntrospector.getExtensionElements(environment);
         if (extensionElements.isEmpty()) {
             // check if it is an SPI
             var spiElements = environment.getElementsAnnotatedWith(Spi.class);
             if (spiElements.size() > 1) {
                 var types = spiElements.stream().map(e -> e.asType().toString()).collect(Collectors.joining(", "));
                 processingEnv.getMessager().printMessage(ERROR, "Multiple SPI definitions found in module: " + types);
-                return null;
+                return ModuleType.INVALID;
             } else if (spiElements.isEmpty()) {
                 processingEnv.getMessager().printMessage(NOTE, "Not an EDC module. Skipping module processing.");
-                return null;
+                return ModuleType.INVALID;
             }
             return ModuleType.SPI;
 
-        } else {
-            // an extension
-            if (extensionElements.size() > 1) {
-                var types = extensionElements.stream().map(e -> e.asType().toString()).collect(Collectors.joining(", "));
-                processingEnv.getMessager().printMessage(ERROR, "Multiple extension types found in module: " + types);
-                return null;
-            }
-            return ModuleType.EXTENSION;
         }
+        return ModuleType.EXTENSION;
     }
 
     private void writeManifest() {
