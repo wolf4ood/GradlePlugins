@@ -14,6 +14,7 @@
 
 package org.eclipse.dataspaceconnector.plugins.autodoc;
 
+import org.eclipse.dataspaceconnector.plugins.autodoc.merge.MergeManifestsTask;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
@@ -36,8 +37,7 @@ public class AutodocPlugin implements Plugin<Project> {
     @Override
     public void apply(Project project) {
 
-        project.getExtensions().create("audodocextension", AutodocExtension.class);
-
+        project.getExtensions().create("autodocextension", AutodocExtension.class);
 
         // adds the annotation processor dependency
         project.getGradle().addListener(new AutodocDependencyInjector(project, format("%s:%s:", GROUP_NAME, PROCESSOR_ARTIFACT_NAME),
@@ -46,6 +46,7 @@ public class AutodocPlugin implements Plugin<Project> {
 
         // registers a "named" task, that does nothing, except depend on the compileTask, which then runs the annotation processor
         project.getTasks().register("autodoc", t -> t.dependsOn("compileJava"));
+        project.getTasks().register("mergeManifest", MergeManifestsTask.class, t -> t.dependsOn("autodoc"));
 
     }
 
