@@ -58,6 +58,7 @@ public class EdcBuildPlugin implements Plugin<Project> {
             if (project.getState().getFailure() != null) {
                 return;
             }
+
             // apply the conventions
             of(
                     rootBuildScript(),

@@ -1,15 +1,12 @@
 plugins {
     `java-gradle-plugin`
-    id("org.gradle.crypto.checksum") version "1.4.0"
 }
 
-val jupiterVersion: String by project
-val assertj: String by project
 val groupId: String by project
 
 gradlePlugin {
-    website.set("https://projects.eclipse.org/proposals/eclipse-dataspace-connector")
-    vcsUrl.set("https://github.com/eclipse-dataspaceconnector/GradlePlugins.git")
+    website.set("https://projects.eclipse.org/projects/technology.edc")
+    vcsUrl.set("https://github.com/eclipse-edc/GradlePlugins.git")
     // Define the plugin
     plugins {
         create("module-names") {

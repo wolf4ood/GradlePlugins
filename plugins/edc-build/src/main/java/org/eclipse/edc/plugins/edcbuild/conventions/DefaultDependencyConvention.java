@@ -36,33 +36,28 @@ class DefaultDependencyConvention implements EdcConvention {
     public void apply(Project target) {
         target.getPluginManager().withPlugin("java-library", plugin -> {
 
-
             var ext = requireExtension(target, BuildExtension.class).getVersions();
             var catalogReader = new CatalogReader(target, ext.getCatalogName());
-            var group = EDC_GROUP_ID;
-            target.setGroup(group);
-            target.setVersion(ext.getProjectVersion().getOrElse("0.0.1-SNAPSHOT"));
 
             // classpath dependencies
             var d = target.getDependencies();
             d.add(JavaPlugin.API_CONFIGURATION_NAME, format("org.jetbrains:annotations:%s", ext.getJetbrainsAnnotation().getOrElse(catalogReader.versionFor("jetbrainsAnnotation", "15.0"))));
-            var jacksonVersion = ext.getJackson().getOrElse(catalogReader.versionFor("jackson", "2.14.0-rc2"));
+            var jacksonVersion = ext.getJackson().getOrElse(catalogReader.versionFor("jackson", "2.14.0"));
             d.add(JavaPlugin.API_CONFIGURATION_NAME, format("com.fasterxml.jackson.core:jackson-core:%s", jacksonVersion));
             d.add(JavaPlugin.API_CONFIGURATION_NAME, format("com.fasterxml.jackson.core:jackson-annotations:%s", jacksonVersion));
             d.add(JavaPlugin.API_CONFIGURATION_NAME, format("com.fasterxml.jackson.core:jackson-databind:%s", jacksonVersion));
             d.add(JavaPlugin.API_CONFIGURATION_NAME, format("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:%s", jacksonVersion));
-            d.add(JavaPlugin.API_CONFIGURATION_NAME, format("%s:runtime-metamodel:%s", group, ext.getMetaModel().getOrElse("0.0.1-SNAPSHOT")));
+            d.add(JavaPlugin.API_CONFIGURATION_NAME, format("%s:runtime-metamodel:%s", EDC_GROUP_ID, ext.getMetaModel().getOrElse("0.0.1-SNAPSHOT")));
 
             //test classpath dependencies
-            var jupiterVersion = ext.getJupiter().getOrElse(catalogReader.versionFor("jupiter", "5.8.2"));
+            var jupiterVersion = ext.getJupiter().getOrElse(catalogReader.versionFor("jupiter", "5.9.2"));
             d.add(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME, format("org.junit.jupiter:junit-jupiter-api:%s", jupiterVersion));
             d.add(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME, format("org.junit.jupiter:junit-jupiter-params:%s", jupiterVersion));
             d.add(JavaPlugin.TEST_RUNTIME_ONLY_CONFIGURATION_NAME, format("org.junit.jupiter:junit-jupiter-engine:%s", jupiterVersion));
-            d.add(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME, format("org.mockito:mockito-core:%s", ext.getMockito().getOrElse(catalogReader.versionFor("mockito", "4.2.0"))));
-            d.add(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME, format("org.assertj:assertj-core:%s", ext.getAssertJ().getOrElse(catalogReader.versionFor("assertj", "3.22.0"))));
+            d.add(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME, format("org.mockito:mockito-core:%s", ext.getMockito().getOrElse(catalogReader.versionFor("mockito", "5.2.0"))));
+            d.add(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME, format("org.assertj:assertj-core:%s", ext.getAssertJ().getOrElse(catalogReader.versionFor("assertj", "3.23.1"))));
         });
     }
-
 
     private static class CatalogReader {
         private static final String FIELDNAME_CONFIG = "config";

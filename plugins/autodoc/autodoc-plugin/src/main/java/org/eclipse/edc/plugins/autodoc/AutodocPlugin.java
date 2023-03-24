@@ -18,8 +18,7 @@ import org.eclipse.edc.plugins.autodoc.merge.MergeManifestsTask;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 
-import java.io.File;
-import java.util.function.Supplier;
+import java.util.List;
 
 import static java.lang.String.format;
 
@@ -29,18 +28,16 @@ import static java.lang.String.format;
 public class AutodocPlugin implements Plugin<Project> {
 
     private static final String PROCESSOR_ARTIFACT_NAME = "autodoc-processor";
-    private static final String PLUGIN_ARTIFACT_NAME = "autodoc-plugin";
-    private static final String GROUP_NAME = "org.eclipse.edc";
+    private final List<String> exclusions = List.of("runtime-metamodel", "version-catalog", "edc-build", "module-names", "openapi-merger", "test-summary", "autodoc-plugin", "autodoc-processor");
 
     @Override
     public void apply(Project project) {
+        var extension = project.getExtensions().create("autodocextension", AutodocExtension.class);
 
-        project.getExtensions().create("autodocextension", AutodocExtension.class);
-
-        // adds the annotation processor dependency
-        project.getGradle().addListener(new AutodocDependencyInjector(project, format("%s:%s", GROUP_NAME, PROCESSOR_ARTIFACT_NAME),
-                createVersionProvider(project),
-                getOutputDirectoryProvider(project)));
+        if (!exclusions.contains(project.getName())) {
+            var dependencyName = format("%s:%s", project.getGroup(), PROCESSOR_ARTIFACT_NAME);
+            project.getGradle().addListener(new AutodocDependencyInjector(project, dependencyName, extension));
+        }
 
         // registers a "named" task, that does nothing, except depend on the compileTask, which then runs the annotation processor
         project.getTasks().register("autodoc", t -> t.dependsOn("compileJava"));
@@ -48,28 +45,4 @@ public class AutodocPlugin implements Plugin<Project> {
 
     }
 
-    private Supplier<File> getOutputDirectoryProvider(Project project) {
-        return () -> {
-            var extension = project.getExtensions().findByType(AutodocExtension.class);
-            if (extension != null) {
-                var fileProvider = extension.getOutputDirectory();
-                return fileProvider.isPresent() ? fileProvider.get() : null;
-            }
-            return null;
-        };
-    }
-
-    private Supplier<String> createVersionProvider(Project project) {
-        return () -> {
-            // runtime version of the actual annotation processor, or override in config
-
-            var extension = project.getExtensions().findByType(AutodocExtension.class);
-            if (extension != null && extension.getProcessorVersion().isPresent()) {
-                var versionToUse = extension.getProcessorVersion().get();
-                project.getLogger().debug("{}: use configured version from AutodocExtension (override) [{}]", project.getName(), versionToUse);
-                return versionToUse;
-            }
-            return null;
-        };
-    }
 }
