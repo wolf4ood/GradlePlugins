@@ -10,6 +10,8 @@ plugins {
 
 val group: String by project
 val annotationProcessorVersion: String by project
+val edcScmUrl: String by project
+val edcScmConnection: String by project
 
 allprojects {
     apply(plugin = "${group}.edc-build")
@@ -22,6 +24,13 @@ allprojects {
     // for all gradle plugins:
     pluginManager.withPlugin("java-gradle-plugin") {
         apply(plugin = "com.gradle.plugin-publish")
+    }
+
+    configure<org.eclipse.edc.plugins.edcbuild.extensions.BuildExtension> {
+        pom {
+            scmUrl.set(edcScmUrl)
+            scmConnection.set(edcScmConnection)
+        }
     }
 
     tasks.withType<Test> {
