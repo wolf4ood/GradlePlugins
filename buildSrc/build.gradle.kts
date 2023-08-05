@@ -46,7 +46,6 @@ sourceSets {
         java {
             srcDirs(
                 "../plugins/autodoc/autodoc-plugin/src/main",
-                "../plugins/autodoc/autodoc-processor/src/main",
                 "../plugins/autodoc/autodoc-converters/src/main",
                 "../plugins/edc-build/src/main",
                 "../plugins/module-names/src/main",

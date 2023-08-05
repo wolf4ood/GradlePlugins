@@ -29,7 +29,7 @@ public class AutodocPlugin implements Plugin<Project> {
 
     public static final String GROUP_NAME = "autodoc";
     public static final String AUTODOC_TASK_NAME = "autodoc";
-    private final List<String> exclusions = List.of("version-catalog", "edc-build", "module-names", "openapi-merger", "test-summary", "autodoc-plugin", "autodoc-processor");
+    private final List<String> exclusions = List.of("version-catalog", "edc-build", "module-names", "openapi-merger", "test-summary", "autodoc-plugin", "autodoc-processor", "autodoc-converters");
 
     @Override
     public void apply(Project project) {
