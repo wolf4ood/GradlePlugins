@@ -132,9 +132,13 @@ public class ExtensionIntrospector {
      * Maps a {@link ConfigurationSetting} from an {@link Setting} annotation.
      */
     private ConfigurationSetting createConfigurationSetting(VariableElement settingElement) {
-        var prefix = resolveConfigurationPrefix(settingElement);
-        var keyValue = prefix + settingElement.getConstantValue().toString();
         var settingMirror = mirrorFor(Setting.class, settingElement);
+        var prefix = attributeValue(String.class, "context", settingMirror, elementUtils);
+        if (prefix.isEmpty()) {
+            prefix = resolveConfigurationPrefix(settingElement);
+        }
+
+        var keyValue = prefix + settingElement.getConstantValue().toString();
 
         return ConfigurationSetting.Builder.newInstance().key(keyValue)
                 .description(attributeValue(String.class, "value", settingMirror, elementUtils))

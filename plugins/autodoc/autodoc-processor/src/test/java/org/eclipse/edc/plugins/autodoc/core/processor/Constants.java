@@ -19,4 +19,9 @@ public interface Constants {
     String TEST_SETTING_KEY = "edc.test.setting";
     String TEST_SETTING_DEFAULT_VALUE = "default value";
     String TEST_SPI_MODULE = "Test SPI Module";
+
+    String TEST_FIELD_PREFIX_SETTING_KEY = "edc.prefix.field.";
+    String TEST_CLASS_PREFIX_SETTING_KEY = "edc.prefix.class.";
+    String TEST_SETTING_ID_KEY = "id";
+
 }
