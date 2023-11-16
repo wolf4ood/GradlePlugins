@@ -49,6 +49,7 @@ import static org.eclipse.edc.plugins.autodoc.core.processor.compiler.ElementFun
  * Contains methods for introspecting any given extension (represented by an {@link Element}) using the Java Compiler API.
  */
 public class ExtensionIntrospector {
+    public static final String CONTEXT_ATTRIBUTE = "context";
     private final Elements elementUtils;
 
     public ExtensionIntrospector(Elements elementUtils) {
@@ -132,9 +133,13 @@ public class ExtensionIntrospector {
      * Maps a {@link ConfigurationSetting} from an {@link Setting} annotation.
      */
     private ConfigurationSetting createConfigurationSetting(VariableElement settingElement) {
-        var prefix = resolveConfigurationPrefix(settingElement);
-        var keyValue = prefix + settingElement.getConstantValue().toString();
         var settingMirror = mirrorFor(Setting.class, settingElement);
+        var prefix = attributeValue(String.class, CONTEXT_ATTRIBUTE, settingMirror, elementUtils);
+        if (prefix.isEmpty()) {
+            prefix = resolveConfigurationPrefix(settingElement);
+        }
+
+        var keyValue = prefix + settingElement.getConstantValue().toString();
 
         return ConfigurationSetting.Builder.newInstance().key(keyValue)
                 .description(attributeValue(String.class, "value", settingMirror, elementUtils))
