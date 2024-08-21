@@ -37,7 +37,8 @@ public class MergeManifestsTask extends DefaultTask {
 
     public MergeManifestsTask() {
         appender = new JsonFileAppender(getProject().getLogger());
-        destinationFile = Path.of(getProject().getRootProject().getBuildDir().getAbsolutePath(), MERGED_MANIFEST_FILENAME).toFile();
+        var rootProjectPath = getProject().getRootProject().getLayout().getBuildDirectory().getAsFile().get().getAbsolutePath();
+        destinationFile = Path.of(rootProjectPath, MERGED_MANIFEST_FILENAME).toFile();
     }
 
 
@@ -48,12 +49,13 @@ public class MergeManifestsTask extends DefaultTask {
         Objects.requireNonNull(autodocExt, "AutodocExtension cannot be null");
 
         var destination = getDestinationFile();
-        var sourceFile = Path.of(autodocExt.getOutputDirectory().get().getAbsolutePath(), "edc.json").toFile();
 
         if (destination == null) {
             throw new GradleException("destinationFile must be configured but was null!");
         }
 
+        var projectBuildDirectory = getProject().getLayout().getBuildDirectory().getAsFile();
+        var sourceFile = Path.of(autodocExt.getOutputDirectory().convention(projectBuildDirectory).get().getAbsolutePath(), "edc.json").toFile();
         if (sourceFile.exists()) {
             appender.append(destination, sourceFile);
         } else {
@@ -84,4 +86,5 @@ public class MergeManifestsTask extends DefaultTask {
     public void setDestinationFile(File destinationFile) {
         this.destinationFile = destinationFile;
     }
+
 }

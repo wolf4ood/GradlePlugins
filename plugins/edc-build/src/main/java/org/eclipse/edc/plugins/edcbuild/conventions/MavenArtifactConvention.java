@@ -90,7 +90,8 @@ class MavenArtifactConvention implements EdcConvention {
 
     private static @NotNull File getManifestFile(Project target) {
         var autodocExt = requireExtension(target, AutodocExtension.class);
-        var pathToManifest = autodocExt.getOutputDirectory().getOrElse(target.getLayout().getBuildDirectory().getAsFile().get()).getAbsolutePath();
+        var projectBuildDirectory = target.getLayout().getBuildDirectory().getAsFile();
+        var pathToManifest = autodocExt.getOutputDirectory().convention(projectBuildDirectory).get().getAbsolutePath();
         var manifestFileName = "edc.json";
         return Path.of(pathToManifest, manifestFileName).toFile();
     }

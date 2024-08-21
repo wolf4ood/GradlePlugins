@@ -47,10 +47,11 @@ class AutodocDependencyInjector implements DependencyResolutionListener {
 
         if (addDependency(project, artifact)) {
             var task = project.getTasks().findByName("compileJava");
-            if ((task instanceof JavaCompile compileJava)) {
+            if (task instanceof JavaCompile compileJava) {
                 var versionArg = format("-A%s=%s", VERSION, project.getVersion());
                 var idArg = format("-A%s=%s:%s", ID, project.getGroup(), project.getName());
-                var outputArg = format("-A%s=%s", OUTPUTDIR, extension.getOutputDirectory().getOrNull());
+                var projectBuildDirectory = project.getLayout().getBuildDirectory().getAsFile();
+                var outputArg = format("-A%s=%s", OUTPUTDIR, extension.getOutputDirectory().convention(projectBuildDirectory).get());
 
                 compileJava.getOptions().getCompilerArgs().addAll(List.of(idArg, versionArg, outputArg));
             }
