@@ -55,36 +55,38 @@ public class MarkdownManifestRenderer implements ManifestRenderer {
 
     @Override
     public void renderDocumentHeader() {
-        stringBuilder.append(heading(DOCUMENT_HEADING, 1)).append(NEWLINE);
-        stringBuilder.append(NEWLINE);
+
     }
 
     @Override
     public void renderModuleHeading(@Nullable String moduleName, @NotNull String modulePath, @NotNull String version) {
-        var name = ofNullable(moduleName).orElse(modulePath);
+        var modulePathTokens = modulePath.split(":");
+        var artifactId = modulePathTokens.length == 2 ? modulePathTokens[1] : modulePath;
 
-        var moduleHeading = heading(format("Module `%s:%s`", name, version), 2);
+        var moduleHeading = heading(format("Module `%s`", artifactId), 2);
         stringBuilder.append(moduleHeading).append(NEWLINE);
 
         if (moduleName != null) {
-            stringBuilder.append(italic(modulePath)).append(NEWLINE);
+            stringBuilder.append(bold("Name:")).append(" ").append(moduleName).append(NEWLINE);
         }
-        stringBuilder.append(NEWLINE);
+
+        stringBuilder
+                .append(bold("Artifact:")).append(" ").append(modulePath).append(":").append(version).append(NEWLINE)
+                .append(NEWLINE);
     }
 
     @Override
     public void renderCategories(List<String> categories) {
-        // append categories as italic text
         var cat = categories
                 .stream()
                 .filter(c -> c != null && !c.isEmpty())
-                .collect(Collectors.joining(","));
+                .collect(Collectors.joining(", "));
 
         if (cat.isEmpty()) {
             cat = NONE;
         }
 
-        stringBuilder.append(italic(format("Categories: %s", cat))).append(NEWLINE);
+        stringBuilder.append(bold("Categories:")).append(" ").append(italic(cat)).append(NEWLINE);
         stringBuilder.append(NEWLINE);
     }
 
@@ -114,7 +116,6 @@ public class MarkdownManifestRenderer implements ManifestRenderer {
 
     @Override
     public void renderConfigurations(List<ConfigurationSetting> configuration) {
-        // add configuration table
         var tableBuilder = new Table.Builder()
                 .addRow("Key", "Required", "Type", "Default", "Pattern", "Min", "Max", "Description");
 
@@ -122,7 +123,7 @@ public class MarkdownManifestRenderer implements ManifestRenderer {
                 .map(this::renderConfigurationSetting)
                 .forEach(tableBuilder::addRow);
 
-        stringBuilder.append(heading("Configuration: ", 5));
+        stringBuilder.append(heading("Configuration", 3));
         if (!configuration.isEmpty()) {
             stringBuilder.append(NEWLINE).append(NEWLINE).append(tableBuilder.build()).append(NEWLINE);
         } else {
@@ -133,16 +134,14 @@ public class MarkdownManifestRenderer implements ManifestRenderer {
 
     @Override
     public void renderProvidedServices(List<Service> provides) {
-        // add exposed services
-        stringBuilder.append(heading("Provided services:", 5)).append(NEWLINE);
+        stringBuilder.append(heading("Provided services", 4)).append(NEWLINE);
         stringBuilder.append(listOrNone(provides.stream().map(s -> code(s.getService())).toList().toArray())).append(NEWLINE);
         stringBuilder.append(NEWLINE);
     }
 
     @Override
     public void renderReferencedServices(List<ServiceReference> references) {
-        // add injected services
-        stringBuilder.append(heading("Referenced (injected) services:", 5)).append(NEWLINE);
+        stringBuilder.append(heading("Referenced (injected) services", 4)).append(NEWLINE);
         stringBuilder.append(listOrNone(references.stream().map(s -> format("%s (%s)", code(s.getService()), s.isRequired() ? "required" : "optional")).toList().toArray())).append(NEWLINE);
         stringBuilder.append(NEWLINE);
     }

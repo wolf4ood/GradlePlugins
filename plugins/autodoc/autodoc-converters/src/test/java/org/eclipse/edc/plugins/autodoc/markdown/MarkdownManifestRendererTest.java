@@ -28,6 +28,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
 
+import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class MarkdownManifestRendererTest {
@@ -58,18 +59,69 @@ class MarkdownManifestRendererTest {
         assertThat(result).isNotNull().isEqualTo(testOutputStream);
     }
 
-    @Test
-    void convert_emptyObject() {
-        var list = List.of(EdcModule.Builder.newInstance().modulePath("foo").version("0.1.0-bar").build());
+    @Nested
+    class Heading {
 
-        var result = writer.convert(list);
+        @Test
+        void shouldRenderHeading() {
+            var list = List.of(EdcModule.Builder.newInstance().modulePath("foo:bar").version("0.1.0-baz").build());
 
-        assertThat(result).isNotNull().isEqualTo(testOutputStream).extracting(Object::toString).satisfies(markdown -> {
-            assertThat(markdown).contains("Module `foo:0.1.0-bar`");
-            assertThat(markdown).contains("### Extension points");
-            assertThat(markdown).contains("### Extensions");
-            assertThat(markdown).doesNotContain("Configuration:");
-        });
+            var result = writer.convert(list);
+
+            assertThat(result).isNotNull().isEqualTo(testOutputStream).extracting(Object::toString).satisfies(markdown -> {
+                assertThat(markdown).contains("Module `bar`");
+                assertThat(markdown).contains("**Artifact:** foo:bar:0.1.0-baz");
+                assertThat(markdown).contains("### Extension points");
+                assertThat(markdown).contains("### Extensions");
+                assertThat(markdown).doesNotContain("Configuration:");
+            });
+        }
+
+        @Test
+        void shouldRenderHeading_whenModuleNameIsSet() {
+            var list = List.of(EdcModule.Builder.newInstance().name("module name").modulePath("foo:bar").version("0.1.0-baz").build());
+
+            var result = writer.convert(list);
+
+            assertThat(result).isNotNull().isEqualTo(testOutputStream).extracting(Object::toString).satisfies(markdown -> {
+                assertThat(markdown).contains("Module `bar`");
+                assertThat(markdown).contains("**Name:** module name");
+                assertThat(markdown).contains("**Artifact:** foo:bar:0.1.0-baz");
+                assertThat(markdown).contains("### Extension points");
+                assertThat(markdown).contains("### Extensions");
+                assertThat(markdown).doesNotContain("Configuration:");
+            });
+        }
+
+    }
+
+    @Nested
+    class Categories {
+        @Test
+        void shouldRenderCategories() {
+            var module = EdcModule.Builder.newInstance().modulePath("any").version("any")
+                    .categories(List.of("category1", "category2"))
+                    .build();
+
+            var result = writer.convert(List.of(module));
+
+            assertThat(result).isNotNull().isEqualTo(testOutputStream).extracting(Object::toString).satisfies(markdown -> {
+                assertThat(markdown).contains("**Categories:** _category1, category2_");
+            });
+        }
+
+        @Test
+        void shouldRenderNone_whenNoCategoriesExist() {
+            var module = EdcModule.Builder.newInstance().modulePath("any").version("any")
+                    .categories(emptyList())
+                    .build();
+
+            var result = writer.convert(List.of(module));
+
+            assertThat(result).isNotNull().isEqualTo(testOutputStream).extracting(Object::toString).satisfies(markdown -> {
+                assertThat(markdown).contains("**Categories:** _None_");
+            });
+        }
     }
 
     @Nested
@@ -83,7 +135,9 @@ class MarkdownManifestRendererTest {
 
             var result = writer.convert(list);
 
-            assertThat(result).isNotNull().extracting(Object::toString).asString().contains("Configuration:").contains("`test.key`");
+            assertThat(result).isNotNull().extracting(Object::toString).asString()
+                    .contains("### Configuration")
+                    .contains("`test.key`");
         }
 
         @Test
@@ -94,7 +148,9 @@ class MarkdownManifestRendererTest {
 
             var result = writer.convert(list);
 
-            assertThat(result).isNotNull().extracting(Object::toString).asString().contains("Configuration:").contains("~~test.key~~");
+            assertThat(result).isNotNull().extracting(Object::toString).asString()
+                    .contains("### Configuration")
+                    .contains("~~test.key~~");
         }
     }
 
