@@ -18,6 +18,7 @@ import org.eclipse.edc.plugins.autodoc.AutodocExtension;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.tasks.Internal;
+import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.options.Option;
 
@@ -64,7 +65,7 @@ public abstract class AbstractManifestResolveTask extends DefaultTask {
         getProject().getConfigurations()
                 .stream().flatMap(config -> config.getDependencies().stream())
                 .distinct()
-                .filter(this::dependencyFilter)
+                .filter(this::includeDependency)
                 .filter(dep -> !getExclusions().contains(dep.getName()))
                 .map(this::createSource)
                 .filter(Optional::isPresent)
@@ -76,7 +77,20 @@ public abstract class AbstractManifestResolveTask extends DefaultTask {
         this.outputDirectoryOverride = new File(output);
     }
 
-    protected abstract boolean dependencyFilter(Dependency dependency);
+    @OutputDirectory
+    public File getOutputFile() {
+        return downloadDirectory.toFile();
+    }
+
+    /**
+     * Whether to consider a particular dependency for manifest resolution.
+     *
+     * @param dependency The dependency in question
+     * @return true if it should be considered, false otherwise.
+     */
+    protected boolean includeDependency(Dependency dependency) {
+        return true;
+    }
 
     /**
      * Returns an {@link InputStream} that points to the physical location of the autodoc manifest file.
